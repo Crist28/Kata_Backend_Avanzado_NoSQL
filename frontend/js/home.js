@@ -1,136 +1,224 @@
-//const note = document.querySelector('#modalNuevaNota');
-const boton = document.querySelector('#botonTest');
+const boton = document.querySelector("#botonTest");
+const botonGuardarNota = document.querySelector("#guardarNota");
 
-// Simulación de datos de notas desde una API
-
-/* const notas = [
-    {
-        id: 1,
-        titulo: "Nota 1",
-        contenido: "Contenido largo de la primera nota que se truncará con tres puntos suspensivos al final. Contenido largo de la primera nota que se truncará con tres puntos suspensivos al final. Contenido largo de la primera nota que se truncará con tres puntos suspensivos al final."
-    },
-    {
-        id: 2,
-        titulo: "Nota 2",
-        contenido: "Contenido largo de la segunda nota que se truncará con tres puntos suspensivos al final. Contenido largo de la segunda nota que se truncará con tres puntos suspensivos al final. Contenido largo de la segunda nota que se truncará con tres puntos suspensivos al final."
-    },
-    {
-        id: 3,
-        titulo: "Nota 3",
-        contenido: "Contenido largo de la tercera nota que se truncará con tres puntos suspensivos al final. Contenido largo de la tercera nota que se truncará con tres puntos suspensivos al final. Contenido largo de la tercera nota que se truncará con tres puntos suspensivos al final."
-    },
-    {
-        id: 4,
-        titulo: "Nota 4",
-        contenido: "Contenido largo de la cuarta nota que se truncará con tres puntos suspensivos al final."
-    }
-]; */
-
-// Función para obtener y mostrar las notas desde la API
 function obtenerNotasDesdeAPI() {
-    // Realiza una solicitud GET a la API para obtener las notas
-    fetch("http://localhost:3002/notes", {
-        method: 'GET',
-        headers: {
-            "Accept": "*/*",
-            'Content-Type': 'application/json'
-        },
-        credentials: 'same-origin' // Agrega esta línea si es necesario
+  fetch("http://localhost:3002/notes", {
+    method: "GET",
+    headers: {
+      Accept: "*/*",
+      "Content-Type": "application/json",
+    },
+    credentials: "same-origin",
+  })
+    .then((response) => response.json())
+    .then((notasDesdeAPI) => {
+      mostrarNotas(notasDesdeAPI);
     })
-        .then(response => response.json())
-        .then(notasDesdeAPI => {
-            // Llama a la función para mostrar las notas en la interfaz
-            mostrarNotas(notasDesdeAPI);
-        })
-        .catch(error => {
-            console.error('Error al obtener las notas desde la API:', error);
-            // Puedes mostrar un mensaje de error al usuario, si es necesario
-        });
+    .catch((error) => {
+      console.error("Error al obtener las notas desde la API:", error);
+    });
 }
 
-// Función para mostrar las notas en la interfaz
 function mostrarNotas(notas) {
-    console.log(notas);
-    const notaContainer = document.getElementById("notaContainer");
+  const notaContainer = document.getElementById("notaContainer");
+  notaContainer.innerHTML = "";
 
-    // Limpia el contenido actual del contenedor de notas
-    notaContainer.innerHTML = '';
+  notas.forEach((nota) => {
+    const colDiv = document.createElement("div");
+    colDiv.classList.add("col-md-3");
 
-    notas.forEach(nota => {
-        const colDiv = document.createElement("div");
-        colDiv.classList.add("col-md-3");
-
-        const cardHTML = `
+    const cardHTML = `
         <div class="card mb-4">
         <div class="card-body overflow-hidden">
             <h5 class="card-title">${nota.titulo}</h5>
             <p class="card-text">${nota.contenido}</p>
         </div>
         <div class="card-footer text-right border-0">
-            <button class="btn btn-primary mr-2" onclick="editarNota(${nota.id})">Editar</button>
-            <button class="btn btn-danger" onclick="eliminarNota(${nota.id})">Eliminar</button>
+            <button id="actualizar" class="btn btn-primary mr-2"  onclick="editarNota('${nota._id}')">Editar</button>
+            <button class="btn btn-danger" onclick="eliminarNota('${nota._id}')">Eliminar</button>        
         </div>
-    </div>
-    
-        `;
-
-        colDiv.innerHTML = cardHTML;
-        notaContainer.appendChild(colDiv);
-    });
+    </div>`;
+    colDiv.innerHTML = cardHTML;
+    notaContainer.appendChild(colDiv);
+  });
 }
 
 function generarID() {
-    return Math.random().toString(36).substring(2, 15);
+  return Math.random().toString(36).substring(2, 15);
 }
 
 function crearNotaNueva(event) {
-    console.log("Hiciste clic en el botón 'Test Nueva Nota'");
-    // Obtén los valores del título y contenido desde la modal
-    /* const titulo = document.querySelector('#titulo').value;
-    const contenido = document.querySelector('#contenido').value; */
-    const titulo = "titulo";
-    const contenido = "Dummy contenido";
+  const titulo = "titulo";
+  const contenido = "Dummy contenido";
 
-    // Luego, puedes usar esta función para obtener un nuevo ID único
-    const nuevoID = generarID();
+  const nuevoID = generarID();
 
-    // Crea un objeto con los datos de la nota
-    const nuevaNota = {
-        id: nuevoID,
-        titulo: titulo,
-        contenido: contenido
-    };
+  const nuevaNota = {
+    id: nuevoID,
+    titulo: titulo,
+    contenido: contenido,
+  };
 
-    console.log(nuevaNota)
-
-    fetch("http://127.0.0.1:3002/notes/create", {
-        method: "POST",
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(nuevaNota),
-        credentials: 'same-origin' // Agrega esta línea
+  fetch("http://127.0.0.1:3002/notes/create", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(nuevaNota),
+    credentials: "same-origin",
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data);
     })
+    .catch((error) => {
+      console.error("Error al enviar la nota:", error);
+    });
+}
+
+function agregarNotaNueva(event) {
+  // Evitar que el formulario se envíe de forma predeterminada
+  event.preventDefault();
+
+  // Obtener los valores del título y el contenido desde los campos del formulario
+  const tituloInput = document.getElementById("titulo");
+  const contenidoTextarea = document.getElementById("contenido");
+
+  const titulo = tituloInput.value;
+  const contenido = contenidoTextarea.value;
+
+  if (!titulo || !contenido) {
+    alert("Por favor, complete todos los campos.");
+    return;
+  }
+
+  const nuevoID = generarID();
+
+  const nuevaNota = {
+    id: nuevoID,
+    titulo: titulo,
+    contenido: contenido,
+  };
+
+  fetch("http://127.0.0.1:3002/notes/create", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(nuevaNota),
+    credentials: "same-origin",
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data);
+    })
+    .catch((error) => {
+      console.error("Error al enviar la nota:", error);
+    });
+}
+
+// function editarNota(_id) {
+//     // Obtener la nota con el ID proporcionado desde la API
+//     fetch(`http://localhost:3002/notes/update/${_id}`, {
+//         method: 'PUT',
+//         headers: {
+//             'Content-Type': 'application/json'
+//         },
+//         body: JSON.stringify({
+//             titulo: "Nuevo título 300",
+//             contenido: "Nuevo contenido 300"
+//         }),
+//         credentials: 'same-origin'
+//     })
+//     .then(response => response.json())
+//     .then(nota => {
+//         // Haz algo con la nota actualizada si es necesario
+//         console.log('Nota actualizada:', nota);
+
+//         // Activar el modal después de obtener la respuesta
+//         $('#modalNuevaNota').modal('show'); // Esto abrirá el modal
+//     })
+//     .catch(error => {
+//         console.error('Error al actualizar la nota:', error);
+//     });
+// }
+
+function editarNota(_id) {
+    // Obtén la nota actual desde la API
+    fetch("http://localhost:3002/notes")
         .then(response => response.json())
-        .then(data => {
-            console.log(data);
+        .then(nota => {
+            // Llena el formulario dentro del modal con los datos actuales
+            document.getElementById('titulo').value = nota.titulo;
+            document.getElementById('contenido').value = nota.contenido;
+
+            // Abre el modal
+            $('#modalNuevaNota').modal('show');
+
+            // Configura un manejador de eventos para el botón "Guardar"
+            document.getElementById('guardarNota').addEventListener('click', () => {
+                // Obtén los valores actualizados del formulario
+                const nuevoTitulo = document.getElementById('titulo').value;
+                const nuevoContenido = document.getElementById('contenido').value;
+
+                // Actualiza la nota con los nuevos valores
+                fetch(`http://localhost:3002/notes/update/${_id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        titulo: nuevoTitulo,
+                        contenido: nuevoContenido
+                    }),
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(notaActualizada => {
+                    console.log('Nota actualizada:', notaActualizada);
+
+                    // Cierra el modal después de actualizar
+                    $('#modalNuevaNota').modal('hide');
+                })
+                .catch(error => {
+                    console.error('Error al actualizar la nota:', error);
+                });
+            });
         })
         .catch(error => {
-            console.error('Error al enviar la nota:', error);
-        })
+            console.error('Error al obtener la nota:', error);
+        });
 }
 
-// Llama a la función para mostrar las notas al cargar la página
+function eliminarNota(_id) {
+  alert("Eliminar nota con ID " + _id);
+  // Mostrar una confirmación al usuario
+  if (confirm("¿Estás seguro de que deseas eliminar esta nota?")) {
+    // Realizar la solicitud de eliminación a la API
+    fetch(`http://localhost:3002/notes/delete/${_id}`, {
+        method: 'DELETE',
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // La nota se eliminó con éxito, puedes realizar alguna acción adicional si es necesario
+            console.log('Nota eliminada con éxito');
+            
+            // Actualiza la interfaz de usuario para reflejar la eliminación (opcional)
+            // Por ejemplo, puedes eliminar la tarjeta de la nota de la interfaz
+            // Aquí puedes agregar tu lógica para actualizar la interfaz
+        } else {
+            console.error('Error al eliminar la nota:', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error al eliminar la nota:', error);
+    });
+ }
+}
+
 obtenerNotasDesdeAPI();
 
-// Funciones de edición y eliminación (puedes personalizar estas funciones)
-function editarNota(id) {
-    alert("Editar nota con ID " + id);
-}
-
-function eliminarNota(id) {
-    alert("Eliminar nota con ID " + id);
-}
-
 boton.addEventListener("click", crearNotaNueva);
-//note.addEventListener("click", crearNotaNueva)
+botonGuardarNota.addEventListener("click", agregarNotaNueva);

@@ -7,7 +7,7 @@ const { rootGet, createNewNote, getAllNotes, updateNote, deleteNote } = require(
 router.get('/', rootGet)//Endpoint
 router.post('/notes/create', createNewNote)
 router.get('/notes', getAllNotes)
-router.put('/update/:id', updateNote); // Ruta para actualizar nota
-router.delete('/delete/:id', deleteNote); // Ruta para eliminar nota
+router.put('/notes/update/:id', updateNote); // Ruta para actualizar nota
+router.delete('/notes/delete/:id', deleteNote); // Ruta para eliminar nota
 
 module.exports = router;
